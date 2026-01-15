@@ -50,11 +50,11 @@
 	{#await sectionOnePromise then _}
 		<div class="content-wrapper">
 			<h1 class="title" use:titleIn>
-				Hey I'm <br>Dr Hasan Hashem
+				Hey I'm <br>Dr. Hasan Hashem
 			</h1>
 			<div in:maskSlideIn={{ duration: 1200, reverse: true, delay: 150 }}>
 				<p class="paragraph">
-					I’m a dentist based in Lebanon, specializing in providing high-quality dental care with a focus on comfort, precision, and long-term oral health.<br><br>I work with individuals and families to deliver personalized, modern dental treatments in a welcoming and professional environment. From routine checkups to advanced procedures, every treatment is tailored to each patient’s needs.
+					I'm a dentist based in Lebanon, specializing in providing high-quality dental care with a focus on comfort, precision, and long-term oral health.<br><br>I work with individuals and families to deliver personalized, modern dental treatments in a welcoming and professional environment. From routine checkups to advanced procedures, every treatment is tailored to each patient's needs.
 Think we can achieve a healthier, more confident smile together?
 				</p>
 			</div>
@@ -189,6 +189,7 @@ Think we can achieve a healthier, more confident smile together?
 		h1
 			font-size: 20vh
 			font-weight: 400
+			text-transform: none
 
 		.paragraph
 			margin-top: 10vh
