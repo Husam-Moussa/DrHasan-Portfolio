@@ -148,7 +148,7 @@
 			</div>
 			
 			<div class="flex-wrapper second">
-				<h1 class = "title home-title">
+				<h1 class = "title">
 					<div class="title-mask">
 						<div class="word" bind:this={titleWord1Element}>Hasan</div>
 					</div><br> 
@@ -190,9 +190,6 @@
 
 @use "../consts" as consts
 @include consts.textStyles()
-
-.home-title
-	text-transform: none !important
 
 #content-container
 	height: 100vh
