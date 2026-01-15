@@ -1,0 +1,244 @@
+<script lang="ts">
+	import { getGPUTier } from 'detect-gpu';
+	import { onMount } from "svelte";
+	import { fade } from "svelte/transition";
+	import { ImageRenderer } from "$lib/effects/work-slider/renderer";
+	import {
+		letterSlideIn,
+		letterSlideOut,
+		maskSlideIn,
+		maskSlideOut,
+		workImageIntro,
+		workListIntro
+	} from "$lib/animations";
+	import { loadPagePromise } from "$lib/store";
+	import {
+		dataState,
+		scrollAnchorState,
+		viewPortState,
+		workScrollState
+	} from "$lib/state.svelte";
+	import { loadImage, onScrolledIntoView } from "$lib/utils";
+
+	let workContainer: HTMLElement;
+	let container: HTMLElement;
+	let listContainer: HTMLElement;
+	let images: HTMLImageElement[] = [];
+	let workItems: HTMLElement[] = [];
+
+	let breakTitleWords = false;
+	let currentActive = -1;
+
+	let inViewResolve: (_: boolean) => void;
+	const inViewPromise: Promise<boolean> = new Promise((resolve) => {
+		inViewResolve = resolve;
+	});
+
+	class WorkSlider {
+		currentMouseX = 0;
+		initialMouseX = 0;
+		currentPosition = 0;
+		targetPosition = 0;
+		initialPosition = 0;
+		offsetSpeed = 5000;
+		lerpSpeed = 0.1;
+
+		onHold = (e: MouseEvent) => {
+			e.preventDefault();
+			if (
+				currentActive >= 0 ||
+				workScrollState.active ||
+				(e.target as HTMLElement).classList.contains("button")
+			) return;
+
+			this.initialMouseX = e.clientX;
+			workScrollState.active = true;
+
+			const style = window.getComputedStyle(listContainer);
+			const matrix = new WebKitCSSMatrix(style.transform);
+			this.initialPosition = matrix.m41;
+		};
+
+		onRelease() {
+			workScrollState.active = false;
+		}
+
+		onMouseMove = (e: MouseEvent) => {
+			if (!workScrollState.active) return;
+			const diff = (e.clientX - this.initialMouseX) * -1;
+			this.targetPosition =
+				this.initialPosition -
+				(this.offsetSpeed * diff) / document.body.clientWidth;
+		};
+
+		animate = () => {
+			if (currentActive < 0) {
+				let endPoint =
+					listContainer.offsetWidth - document.body.clientWidth;
+				if (endPoint < 0) endPoint = listContainer.offsetWidth;
+				if (this.targetPosition > 0) this.targetPosition = 0;
+				if (this.targetPosition <= -endPoint)
+					this.targetPosition = -endPoint;
+			}
+
+			this.currentPosition =
+				this.currentPosition * (1 - this.lerpSpeed) +
+				this.targetPosition * this.lerpSpeed;
+
+			workScrollState.speed =
+				this.currentPosition - this.targetPosition;
+
+			listContainer.style.transform = `translate3d(${this.currentPosition}px,0,0)`;
+			requestAnimationFrame(this.animate);
+		};
+	}
+
+	const slider = new WorkSlider();
+
+	onMount(async () => {
+		onScrolledIntoView(workContainer, () => inViewResolve(true));
+
+		const gpuTier = await getGPUTier();
+		viewPortState.isMobile = gpuTier.isMobile!;
+
+		await loadPagePromise;
+		scrollAnchorState.work = workContainer;
+
+		listContainer.style.transform = "translate3d(0,0,0)";
+
+		if (gpuTier.tier >= 2 && !gpuTier.isMobile && gpuTier.fps! >= 30) {
+			new ImageRenderer(container, images);
+		}
+	});
+
+	function toggleActiveItem(i: number) {
+		currentActive = currentActive === i ? -1 : i;
+		if (currentActive >= 0) {
+			slider.targetPosition =
+				-(workItems[i].offsetLeft - window.innerWidth / 4 + window.innerWidth / 10);
+		}
+	}
+
+	function titleSlide(node: HTMLElement) {
+		const title = letterSlideIn(node, { delay: 5, breakWord: false });
+		title.anime({ onComplete: () => (breakTitleWords = true) });
+	}
+</script>
+
+<div id="content-container" class="work-click-area" bind:this={workContainer}>
+	<div
+		class="content-wrapper"
+		onmousedown={slider.onHold}
+		onmouseup={slider.onRelease}
+		onmouseleave={slider.onRelease}
+		onmousemove={slider.onMouseMove}
+		bind:this={container}
+		class:disabled={currentActive >= 0}
+		use:workListIntro={{ promise: inViewPromise, onComplete: () => slider.animate() }}
+	>
+		<ul class="work-list" bind:this={listContainer}>
+			{#each dataState.workData as item, i}
+				<li use:workImageIntro={{ promise: inViewPromise, delay: i * 30 }}>
+					<div
+						class="list-item clickable passive"
+						class:active={currentActive === i}
+						class:ambient={currentActive !== i && currentActive >= 0}
+						bind:this={workItems[i]}
+					>
+						<div class="img-wrapper">
+							{#await loadImage(`assets/imgs/work-back/${item.id}/cover.png`) then src}
+								<img bind:this={images[i]} src={src} draggable="false" />
+							{/await}
+						</div>
+
+						<div class="text-wrapper" class:hidden={currentActive >= 0}>
+							<h1 class="item-title">{item.title}</h1>
+							<button class="button" on:click={() => toggleActiveItem(i)}>
+								view
+							</button>
+						</div>
+					</div>
+				</li>
+			{/each}
+		</ul>
+
+		{#if currentActive !== -1}
+			<div class="details-container">
+				<div class="wrapper">
+					<div class="mid-align">
+						<h1
+							class="title"
+							use:titleSlide
+							out:letterSlideOut
+							class:breakTitleWords
+						>
+							{dataState.workData[currentActive].title}
+						</h1>
+
+						<button class="close-button-wrapper" on:click={() => toggleActiveItem(currentActive)}>
+							<div class="close-button">&times;</div>
+						</button>
+					</div>
+
+					<!-- IMAGE GALLERY -->
+					<div class="gallery-wrapper">
+						<div class="gallery">
+							{#each dataState.workData[currentActive].gallery as img, gi}
+								<div
+									class="gallery-item"
+									in:maskSlideIn={{ reverse: true, delay: gi * 80 }}
+									out:maskSlideOut
+								>
+									<img src={img} draggable="false" />
+								</div>
+							{/each}
+						</div>
+					</div>
+
+					<div class="roles">
+						<ul>
+							{#each dataState.workData[currentActive].roles as role}
+								<li>{"+ " + role}</li>
+							{/each}
+						</ul>
+					</div>
+
+					<div class="links">
+						{#each dataState.workData[currentActive].links as link}
+							<a href={link.link} target="_blank" class="button">
+								{link.text}
+							</a>
+						{/each}
+					</div>
+				</div>
+			</div>
+		{/if}
+	</div>
+</div>
+
+<style lang="sass">
+.gallery-wrapper
+	margin-top: 5vh
+
+.gallery
+	display: grid
+	grid-template-columns: repeat(3, 1fr)
+	gap: 2vh
+
+	@media (max-width: 750px)
+		grid-template-columns: 1fr
+
+.gallery-item
+	height: 22vh
+	overflow: hidden
+	box-shadow: 3px 9px 18px rgba(0,0,0,0.25)
+
+	img
+		width: 100%
+		height: 100%
+		object-fit: cover
+		transition: transform .6s ease
+
+	&:hover img
+		transform: scale(1.05)
+</style>

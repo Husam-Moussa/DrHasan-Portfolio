@@ -1,0 +1,55 @@
+[
+    {
+        "id": "E-Max Veneers",
+        "title": "E-Max Veneers",
+        "details": {
+            "description": "E-Max Veneers are a type of veneer that are made from a composite material."
+        },
+        "cases": [
+            "/assets/imgs/work-back/E-Max Veneers/E-Max Veneers1.png",
+            "/assets/imgs/work-back/E-Max Veneers/E-Max Veneers2.png",
+            "/assets/imgs/work-back/E-Max Veneers/E-Max Veneers3.png",
+            "/assets/imgs/work-back/E-Max Veneers/E-Max Veneers4.png",
+            "/assets/imgs/work-back/E-Max Veneers/E-Max Veneers5.png"
+        
+        ]
+    },
+    {
+        "id": "Composite Veneers",
+        "title": "Composite Veneers",
+        "details": {
+            "description": "Composite Veneers are a type of veneer that are made from a composite material."
+           
+        },
+       
+        "cases": [
+            "/assets/imgs/work-back/Composite Veneers/Composite Veneers1.png",
+            "/assets/imgs/work-back/Composite Veneers/Composite Veneers2.png",
+            "/assets/imgs/work-back/Composite Veneers/Composite Veneers3.png",
+            "/assets/imgs/work-back/Composite Veneers/Composite Veneers4.png",
+            "/assets/imgs/work-back/Composite Veneers/Composite Veneers5.png"
+           
+        ]
+    },
+    {
+        "id": "Endo",
+        "title": "Endo",
+        "details": {
+            "description": "Endo are a type of veneer that are made from a composite material."
+        },
+       
+        "cases": ["case1.png", "case2.png", "case3.png"]
+    },
+    {
+        "id": "Whitening",
+        "title": "Whitening",
+        "details": {
+            "description": "Whitening are a type of veneer that are made from a composite material."
+        },
+       
+        "cases": [
+            "/assets/imgs/work-back/Whitening/Whitening1.png"
+            
+        ]
+    }
+]
